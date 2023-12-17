@@ -2,6 +2,7 @@ const express = require('express')
 // const contacts = require("../../models/contacts")
 
 const controllersCont = require('../../controllers/controllers-contacts');
+const {isEmptyBody} = require('../../middlewares/index') ;
 
 const router = express.Router()
 
@@ -9,14 +10,10 @@ router.get('/', controllersCont.getListContacts)
 
 router.get('/:id', controllersCont.getById)
 
-router.post('/', controllersCont.addContact)
+router.post('/', isEmptyBody, controllersCont.addContact)
 
-router.delete('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.delete('/:id', controllersCont.deleteById)
 
-router.put('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.put('/:id', isEmptyBody, controllersCont.updateById);
 
 module.exports = router

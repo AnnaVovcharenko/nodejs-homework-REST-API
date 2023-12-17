@@ -33,29 +33,31 @@ const removeContact = async (contactId) => {
 const addContact = async (body) => {
   const contacts = await listContacts();
   const newContact = { id: nanoid(), ...body }; 
-  
+  // console.log(newContact);
   contacts.push(newContact);
   await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2))
   return newContact;
 }
 
 
-// const updateContact = async (contactId, { name, email, phone }) => {
-//   const contacts = await listContacts();
-//   const dataContact = contacts.findIndex(item => item.id === contactId);
-//   if (dataContact === -1) {
-//     return null
-//   }
+const updateContact = async (id, body) => {
+  const contacts = await listContacts();
+  const dataContact = contacts.findIndex(item => item.id === id);
+  if (dataContact === -1) {
+    return null
+  }
 
-//   const [resData] = contacts.filter()
-//   await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2))
-// }
+  contacts[dataContact] = {...contacts[dataContact], ...body};
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2))
+  return contacts[dataContact];
+ 
+}
 
-
+ 
 module.exports = {
   listContacts,
   getContactById,
   removeContact,
   addContact,
-  // updateContact
+  updateContact
 }
