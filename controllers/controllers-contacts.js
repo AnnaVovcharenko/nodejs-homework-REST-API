@@ -1,7 +1,7 @@
 
 const contacts = require("../models/contacts");
-const {HttpError }= require('../helpers/index');
-const { contactAddSchema, contactUpSchema  } = require("../schemas/contact-schemas");
+const { HttpError } = require('../helpers/index');
+const { contactAddSchema, contactUpSchema } = require("../schemas/contact-schemas");
 
 
 
@@ -18,11 +18,12 @@ const getById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await contacts.getContactById(id);
-    res.json(result)
     if (!result) {
-      throw HttpError(404, `Movie with id=${id} not found`);
+      throw HttpError(404, `Not found`);
 
     }
+    res.json(result);
+
   } catch (error) {
     next(error);
   }
@@ -42,40 +43,36 @@ const addContact = async (req, res, next) => {
 
 const updateById = async (req, res, next) => {
   try {
-      const { error } = contactUpSchema.validate(req.body);
-      if (error) {
-          throw HttpError(400, error.message);
-      }
-      const { id } = req.params;
-      const result = await contacts.updateContact(id, req.body);
-      if (!result) {
-          throw HttpError(404, `Movie with id=${id} not found`);
-      }
+    const { error } = contactUpSchema.validate(req.body);
+    if (error) {
+      throw HttpError(400, error.message);
+    }
+    const { id } = req.params;
+    const result = await contacts.updateContact(id, req.body);
+    if (!result) {
+      throw HttpError(404, `Not found`);
+    }
 
-      res.json(result);
+    res.json(result);
   }
   catch (error) {
-      next(error);
+    next(error);
   }
 };
 
 const deleteById = async (req, res, next) => {
   try {
-      const { id } = req.params;
-      const result = await contacts.removeContact(id);
-      // console.log(result)
-      if (!result) {
-          throw HttpError(404, `Movie with id=${id} not found`);
-      }
-
-      // res.status(204).send()
-
-      res.json({
-          message: "Delete success"
-      })
+    const { id } = req.params;
+    const result = await contacts.removeContact(id);
+    if (!result) {
+      throw HttpError(404, `Not found`);
+    }
+    res.json({
+      message: "contact deleted"
+    })
   }
   catch (error) {
-      next(error);
+    next(error);
   }
 }
 
