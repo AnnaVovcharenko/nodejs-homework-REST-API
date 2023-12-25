@@ -1,5 +1,5 @@
 const ctrlWrapper = require('./ctrlWrapper');
-const valBody = require('./valBody');
+const {valBody} = require('./valBody');
 
 module.exports = {
     ctrlWrapper,
