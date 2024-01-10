@@ -7,13 +7,15 @@ const getListContacts = async (req, res) => {
   const { _id: owner } = req.user;
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
-  const result = await Contact.find({ owner }, '-createdAt -updatedAt', { skip, limit }).populate("owner", "email");
+  const result = await Contact.find({ owner },
+    '-createdAt -updatedAt',
+    { skip, limit }).populate("owner", "email");
   res.json(result);
 };
 const getById = async (req, res,) => {
   const { id: _id } = req.params;
-  const {_id: owner} = req.user;
-  const result = await Contact.findById({_id, owner});
+  const { _id: owner } = req.user;
+  const result = await Contact.findById({ _id, owner });
   if (!result) {
     throw HttpError(404, `Not found`);
   }
@@ -27,8 +29,8 @@ const addContact = async (req, res,) => {
 
 const updateById = async (req, res,) => {
   const { id: _id } = req.params;
-  const {_id: owner} = req.user;
-  const result = await Contact.findByIdAndUpdate({_id, owner}, req.body);
+  const { _id: owner } = req.user;
+  const result = await Contact.findByIdAndUpdate({ _id, owner }, req.body);
   if (!result) {
     throw HttpError(404, `Not found`);
   }
@@ -37,8 +39,8 @@ const updateById = async (req, res,) => {
 
 const deleteById = async (req, res, next) => {
   const { id: _id } = req.params;
-  const {_id: owner} = req.user;
-  const result = await Contact.findByIdAndDelete({_id, owner});
+  const { _id: owner } = req.user;
+  const result = await Contact.findByIdAndDelete({ _id, owner });
   if (!result) {
     throw HttpError(404, `Not found`);
   }
@@ -46,8 +48,8 @@ const deleteById = async (req, res, next) => {
 };
 const updateFavorite = async (req, res) => {
   const { id: _id } = req.params;
-  const {_id: owner} = req.user;
-  const result = await Contact.findByIdAndUpdate({_id, owner}, req.body, { new: true });
+  const { _id: owner } = req.user;
+  const result = await Contact.findByIdAndUpdate({ _id, owner }, req.body, { new: true });
   if (!result) {
     throw HttpError(404, 'Not found')
   };
