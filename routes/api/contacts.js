@@ -1,9 +1,9 @@
 const express = require('express')
 const  controllersCont  = require('../../controllers/controllers-contacts');
-const { isEmptyBody } = require('../../middlewares/index');
-const { isEmptyFavorite } = require('../../middlewares/index');
-const {isValidId} = require('../../middlewares/index');
-const {authenticate} = require('../../middlewares/index');
+const { isEmptyBody, isEmptyFavorite, isValidId, authenticate  } = require('../../middlewares/index');
+
+
+
 const {valBody} = require('../../decorators/index');
 const contactAddSchema = require('../../models/contacts');
 const contactUpSchema = require('../../models/contacts');

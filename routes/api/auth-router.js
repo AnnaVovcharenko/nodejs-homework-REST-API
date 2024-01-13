@@ -2,7 +2,7 @@ const express = require('express');
 
 const authController = require('../../controllers/auth-controller');
 const { isEmptyBody, authenticate } = require('../../middlewares/index');
-
+const {upload} = require('../../middlewares/index');
 const {valBody} = require('../../decorators/index')
 const {userSignupSchems, userSigninShems, subscriptionSchema} = require('../../models/User')
 
@@ -14,7 +14,8 @@ authRouter.post('/signup',isEmptyBody, valBody(userSignupSchems),authController.
 authRouter.post('/signin', isEmptyBody, valBody(userSigninShems),authController.signin); 
 authRouter.get('/current', authenticate, authController.getCurrent );
 authRouter.post("/signout", authenticate, authController.signout);
-authRouter.patch('/users', authenticate, valBody(subscriptionSchema), authController.updateSubscription )
+authRouter.patch('/users', authenticate, valBody(subscriptionSchema), authController.updateSubscription );
+authRouter.patch('/user/avatars', upload.single('avatar'), authenticate, authController.addAvatar );
 
 
 
