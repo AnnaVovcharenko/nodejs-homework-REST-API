@@ -15,7 +15,7 @@ authRouter.post('/signin', isEmptyBody, valBody(userSigninShems),authController.
 authRouter.get('/current', authenticate, authController.getCurrent );
 authRouter.post("/signout", authenticate, authController.signout);
 authRouter.patch('/users', authenticate, valBody(subscriptionSchema), authController.updateSubscription );
-authRouter.patch('/user/avatars', upload.single('avatar'), authenticate, authController.addAvatar );
+authRouter.patch('/user/avatars', authenticate, upload.single('avatar'), authController.addAvatar );
 
 
 
