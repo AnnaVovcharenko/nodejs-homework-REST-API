@@ -4,13 +4,15 @@ const authController = require('../../controllers/auth-controller');
 const { isEmptyBody, authenticate } = require('../../middlewares/index');
 const {upload} = require('../../middlewares/index');
 const {valBody} = require('../../decorators/index')
-const {userSignupSchems, userSigninShems, subscriptionSchema} = require('../../models/User')
+const {userSignupSchems, userSigninShems, userEmailShems, subscriptionSchema} = require('../../models/User')
 
 const authRouter = express.Router();
 
 
 
 authRouter.post('/signup',isEmptyBody, valBody(userSignupSchems),authController.signup); 
+authRouter.get('/verify/:verificationToken', authController.verify);
+authRouter.post('/verify', valBody(userEmailShems), authController.resendVerifyEmail);
 authRouter.post('/signin', isEmptyBody, valBody(userSigninShems),authController.signin); 
 authRouter.get('/current', authenticate, authController.getCurrent );
 authRouter.post("/signout", authenticate, authController.signout);

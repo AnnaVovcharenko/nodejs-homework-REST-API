@@ -1,10 +1,12 @@
 const bcrypt = require('bcrypt');
 
+const { nanoid } = require('nanoid');
+
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const { User } = require('../models/User');
 const { ctrlWrapper } = require('../decorators/ctrlWrapper');
-const { HttpError } = require('../helpers/index');
+const { HttpError, sendEmail } = require('../helpers/index');
 const path = require('path');
 const fs = require("fs/promises");
 const Jimp = require("jimp");
@@ -12,7 +14,7 @@ const gravatar = require("gravatar");
 
 const postersPath = path.join(__dirname, "../", "public", "avatars");
 
-const { JWT_SECRET } = process.env;
+const { JWT_SECRET, BASE_URL } = process.env;
 
 const signup = async (req, res) => {
     const { email, password } = req.body;
@@ -22,18 +24,81 @@ const signup = async (req, res) => {
     }
     const hashPassword = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
-    const newUser = await User.create({ ...req.body, password: hashPassword }, avatarURL);
+    const verificationToken = nanoid(8);
+
+    const newUser = await User.create({
+        ...req.body,
+        password: hashPassword,
+        avatarURL,
+        verificationToken,
+    });
+
+    const verifyEmail = {
+        to: email,
+        subject: "Verify email",
+        html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${verificationToken}">Click to verify email</a>`
+    };
+    await sendEmail(verifyEmail);
+
     res.status(201).json({
         email: newUser.email,
         subscription: newUser.subscription,
     })
 
 }
+
+
+const verify = async(req, res)=> {
+    const {verificationToken} = req.params;
+    const user = await User.findOne({verificationToken});
+    if(!user) {
+        throw HttpError(404, "User not found");
+    }
+
+    await User.findByIdAndUpdate(user._id, {verify: true, verificationToken: ""});
+
+    res.json({
+        message: "Verification successful"
+    })
+}
+
+const resendVerifyEmail = async(req, res)=> {
+    const {email} = req.body;
+    const user = await User.findOne({email});
+    if(!user) {
+        throw HttpError(400, "missing required field email");
+    }
+    if(user.verify) {
+        throw HttpError(400, "Verification has already been passed");
+    }
+
+    const verifyEmail = {
+        to: email,
+        subject: "Verify email",
+        html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${user.verificationToken}">Click to verify email</a>`,
+    }
+
+    await sendEmail(verifyEmail);
+
+    res.json({
+        message: "Verify email send success"
+    })
+}
+
+
+
+
+
+
 const signin = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
         throw HttpError(401, "Email or password is wrong");
+    }
+
+    if(!user.verify) {
+        throw HttpError(401, "Email not verify");
     }
 
     const passwordCompare = await bcrypt.compare(password, user.password);
@@ -79,26 +144,26 @@ const updateSubscription = async (req, res) => {
     const result = await User.findByIdAndUpdate(_id, { subscription }, { new: true });
     res.json(result);
 }
- const addAvatar = async (req, res) => {
-     const {_id: owner} = req.user;
-     const {path: oldPath, filename} = req.file;
-     const newPath = path.join(postersPath, filename);
-     await fs.rename(oldPath, newPath);
-     const avatarURL = path.join('avatars', filename);
+const addAvatar = async (req, res) => {
+    const { _id: owner } = req.user;
+    const { path: oldPath, filename } = req.file;
+    const newPath = path.join(postersPath, filename);
+    await fs.rename(oldPath, newPath);
+    const avatarURL = path.join('avatars', filename);
 
-     Jimp.read(newPath, (error, image) => {
+    Jimp.read(newPath, (error, image) => {
         if (error) throw HttpError(404, "Avatar not found");
         image.resize(250, 250).write(newPath);
-      });
+    });
 
-      await User.findByIdAndUpdate(owner, { avatarURL });
+    await User.findByIdAndUpdate(owner, { avatarURL });
 
-     res.json({
+    res.json({
         avatarURL,
-     })
+    })
 
 
- }
+}
 
 module.exports = {
     signup: ctrlWrapper(signup),
@@ -106,6 +171,7 @@ module.exports = {
     getCurrent: ctrlWrapper(getCurrent),
     signout: ctrlWrapper(signout),
     updateSubscription: ctrlWrapper(updateSubscription),
-    addAvatar: ctrlWrapper(addAvatar)
-
+    addAvatar: ctrlWrapper(addAvatar),
+    verify: ctrlWrapper(verify),
+    resendVerifyEmail: ctrlWrapper(resendVerifyEmail)
 }
